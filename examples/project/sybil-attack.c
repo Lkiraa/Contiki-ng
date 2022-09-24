@@ -87,7 +87,7 @@ static const char *rpl_mop_to_str(int mop)
 }
 
 /*list of neighbord*/
- void neighbor_list()
+ void display()
 {
   
   if(!current_instance->used) {
@@ -110,7 +110,7 @@ static const char *rpl_mop_to_str(int mop)
       i++;
       printf("\n");
     }
-    /*LOG_INFO("\n-- neighbor_list change \n: ");
+    /*LOG_INFO("\n-- display change \n: ");
     int e ;
     for ( e = 0; e < i; e++)
     {
@@ -270,11 +270,11 @@ PROCESS_THREAD(udp_client_process, ev, data)
       simple_udp_sendto(&udp_conn, str, strlen(str), &dest_ipaddr);
       count++;
       // sending diio message
-      neighbor_list();
+      display();
       
     } else {
       LOG_INFO("Not reachable yet\n");
-      neighbor_list();
+      display();
     }
 
     /* Add some jitter */

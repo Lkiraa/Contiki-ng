@@ -78,7 +78,7 @@ ptorecev++;
 
 
 /*list of neighbord*/
- void neighbor_list()
+ void display()
 {
   if(!current_instance->used) {
     LOG_INFO("-- Instance: None\n");
@@ -213,7 +213,7 @@ PROCESS_THREAD(udp_client_process, ev, data)
       simple_udp_sendto(&udp_conn, str, strlen(str), &dest_ipaddr);
       count++;
        ptosend = (int)count;
-      neighbor_list();
+      display();
       // star flooding attack 
       if(flood){
       	process_start(&flood_attack, NULL);
@@ -222,7 +222,7 @@ PROCESS_THREAD(udp_client_process, ev, data)
       }
     } else {
       LOG_INFO("Not reachable yet\n");
-      neighbor_list();
+      display();
     }
 
     /* Add some jitter */

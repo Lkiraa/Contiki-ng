@@ -66,7 +66,7 @@ ptorecev++;
 
 
 /*list of neighbord*/
- void neighbor_list()
+ void display()
 {
   if(!current_instance->used) {
     LOG_INFO("-- Instance: None\n");
@@ -166,11 +166,11 @@ PROCESS_THREAD(udp_client_process, ev, data)
       count++;
       ptosend = (int)count;
       // sending diio message
-      neighbor_list();
+      display();
 
     } else {
       LOG_INFO("Not reachable yet\n");
-      neighbor_list();
+      display();
     }
 
     /* Add some jitter */
