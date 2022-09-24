@@ -50,7 +50,7 @@
 #include "net/routing/rpl-classic/rpl-private.h"
 #include "net/nbr-table.h"
 #include "net/link-stats.h"
-
+#include "examples/project/hack.h"
 #include "sys/log.h"
 
 #define LOG_MODULE "RPL"
@@ -94,6 +94,36 @@ to the threshold of 96 in the non-squared case) */
 
 /* Reject parents that have a higher path cost than the following. */
 #define MAX_PATH_COST      32768   /* Eq path ETX of 256 */
+#define INIT_ATTACK 100
+/*static int  counter = 0;
+static bool is_attack = false;*/
+void set_hack(int n);
+ int get_hack();
+static int16_t  increment = 0;
+static int16_t decrement = 0;
+/*------------------------------my functions-----------------------------------------*/
+/*static void set_attack()
+{
+   if(is_attack){
+    is_attack = false;
+   }else{
+    is_attack = true;
+   }
+
+}
+
+static void set_counter()
+{
+  LOG_INFO("Count : %d\n",counter);
+  if(counter == INIT_ATTACK){
+    counter = 0;
+    set_attack();
+  }else{
+    counter++;
+  }
+
+}*/
+
 
 /*---------------------------------------------------------------------------*/
 static void
@@ -180,7 +210,30 @@ rank_via_parent(rpl_parent_t *p)
   path_cost = parent_path_cost(p);
 
   /* Rank lower-bound: parent rank + min_hoprankinc */
-  return MAX(MIN((uint32_t)p->rank + min_hoprankinc, 0xffff), path_cost);
+  //set_counter();
+  if(get_hack() == 0){
+    LOG_INFO("increase rank started");
+    int i = (increment+128);
+    if( (i < 65535) || i != 128){
+      increment = increment +1;
+    }else{
+      increment = 128;
+    }
+    
+    return MAX(MIN((uint32_t)p->rank + (min_hoprankinc+increment), 0xffff), path_cost);
+  }
+  if(get_hack() == 1){
+     LOG_INFO("increase rank started");
+  
+      decrement = decrement +128;
+    
+    LOG_INFO("decrease rank started");
+    return  MIN(MIN((uint32_t)p->rank, 0xffff), path_cost);
+  }
+     
+      return MAX(MIN((uint32_t)p->rank + min_hoprankinc, 0xffff), path_cost);
+
+  
 }
 /*---------------------------------------------------------------------------*/
 static int
@@ -224,13 +277,16 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   p2_cost = parent_path_cost(p2);
 
   /* Maintain stability of the preferred parent in case of similar ranks. */
+
   if(p1 == dag->preferred_parent || p2 == dag->preferred_parent) {
     if(p1_cost < p2_cost + PARENT_SWITCH_THRESHOLD &&
        p1_cost > p2_cost - PARENT_SWITCH_THRESHOLD) {
       return dag->preferred_parent;
     }
   }
-
+  if(get_hack() == 5){
+    return p1_cost > p2_cost ? p1 : p2;
+  }
   return p1_cost < p2_cost ? p1 : p2;
 }
 /*---------------------------------------------------------------------------*/

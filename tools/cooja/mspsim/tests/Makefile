@@ -14,8 +14,8 @@ endif
 MCU=msp430x1611
 
 ### Compiler definitions
-CC       = msp430-gcc
-LD       = msp430-ld
+CC       = msp430-gcc-4.7.3
+LD       = msp430-ld-4.7.3
 AS       = msp430-as
 AR       = msp430-ar
 OBJCOPY  = msp430-objcopy

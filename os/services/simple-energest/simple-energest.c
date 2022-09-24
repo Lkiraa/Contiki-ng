@@ -46,23 +46,30 @@
 #include "simple-energest.h"
 #include <stdio.h>
 #include <limits.h>
-
+#include "examples/project/attributes.h"
 /* Log configuration */
 #include "sys/log.h"
 #define LOG_MODULE "Energest"
 #define LOG_LEVEL LOG_LEVEL_INFO
 
+#define RX_CURRENT 18800ul
+#define TX_CURRENT 17400ul
+#define CPU_CURRENT 426ul
+#define LPM_CURRENT 20ul
+
 static unsigned long last_tx, last_rx, last_time, last_cpu, last_lpm, last_deep_lpm;
 static unsigned long delta_tx, delta_rx, delta_time, delta_cpu, delta_lpm, delta_deep_lpm;
 static unsigned long curr_tx, curr_rx, curr_time, curr_cpu, curr_lpm, curr_deep_lpm;
+/*static unsigned long enregie_tx, enregie_rx, enregie_cpu, enregie_lpm;
+*/static unsigned long E, P;
 
 PROCESS(simple_energest_process, "Simple Energest");
 /*---------------------------------------------------------------------------*/
-static unsigned long
+/*static unsigned long
 to_permil(unsigned long delta_metric, unsigned long delta_time)
 {
   return (1000ul * (delta_metric)) / delta_time;
-}
+}*/
 /*---------------------------------------------------------------------------*/
 static void
 simple_energest_step(void)
@@ -91,15 +98,12 @@ simple_energest_step(void)
   last_deep_lpm = curr_deep_lpm;
   last_tx = curr_tx;
   last_rx = curr_rx;
-
-  LOG_INFO("--- Period summary #%u (%lu seconds)\n", count++, delta_time/ENERGEST_SECOND);
-  LOG_INFO("Total time  : %10lu\n", delta_time);
-  LOG_INFO("CPU         : %10lu/%10lu (%lu permil)\n", delta_cpu, delta_time, to_permil(delta_cpu, delta_time));
-  LOG_INFO("LPM         : %10lu/%10lu (%lu permil)\n", delta_lpm, delta_time, to_permil(delta_lpm, delta_time));
-  LOG_INFO("Deep LPM    : %10lu/%10lu (%lu permil)\n", delta_deep_lpm, delta_time, to_permil(delta_deep_lpm, delta_time));
-  LOG_INFO("Radio Tx    : %10lu/%10lu (%lu permil)\n", delta_tx, delta_time, to_permil(delta_tx, delta_time));
-  LOG_INFO("Radio Rx    : %10lu/%10lu (%lu permil)\n", delta_rx, delta_time, to_permil(delta_rx, delta_time));
-  LOG_INFO("Radio total : %10lu/%10lu (%lu permil)\n", delta_tx+delta_rx, delta_time, to_permil(delta_tx+delta_rx, delta_time));
+  E = ( ((delta_cpu/ENERGEST_SECOND) * CPU_CURRENT* 3) + ((delta_lpm/ENERGEST_SECOND) * LPM_CURRENT * 3) + ((delta_tx/ENERGEST_SECOND) * TX_CURRENT * 3) + 
+    ((delta_rx/ENERGEST_SECOND) * RX_CURRENT * 3));
+  P = (E/(delta_time/ENERGEST_SECOND));
+  e = E;
+  p = P;
+   LOG_INFO("--- Period summary %u ( %lu seconds) Energie: %10lu -- Puissance %10lu",count++, (delta_time/ENERGEST_SECOND), E, P);
 }
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(simple_energest_process, ev, data)

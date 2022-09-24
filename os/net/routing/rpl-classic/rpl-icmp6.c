@@ -55,12 +55,15 @@
 #include "net/packetbuf.h"
 #include "net/ipv6/multicast/uip-mcast6.h"
 #include "random.h"
+#include "examples/project/hack.h"
+
+
 
 #include "sys/log.h"
 
 #include <limits.h>
 #include <string.h>
-
+#include "examples/project/attributes.h"
 #define LOG_MODULE "RPL"
 #define LOG_LEVEL LOG_LEVEL_RPL
 
@@ -89,7 +92,8 @@ void RPL_DEBUG_DAO_OUTPUT(rpl_parent_t *);
 #endif
 
 static uint8_t dao_sequence = RPL_LOLLIPOP_INIT;
-
+static uint16_t  dis_i, dao_i;
+static uint16_t  dis_o, dao_o;
 #if RPL_WITH_MULTICAST
 static uip_mcast6_route_t *mcast_group;
 #endif
@@ -247,7 +251,10 @@ dis_input(void)
         /* } */
       }
     }
+     dis_i++;
+  dis_in(dis_i);
   }
+
   uipbuf_clear();
 }
 /*---------------------------------------------------------------------------*/
@@ -279,6 +286,8 @@ dis_output(uip_ipaddr_t *addr)
   LOG_INFO_("\n");
 
   uip_icmp6_send(addr, ICMP6_RPL, RPL_CODE_DIS, 2);
+  dis_o++;
+  dis_out(dis_o);
 }
 /*---------------------------------------------------------------------------*/
 static void
@@ -504,7 +513,12 @@ dio_output(rpl_instance_t *instance, uip_ipaddr_t *uc_addr)
 
   buffer = UIP_ICMP_PAYLOAD;
   buffer[pos++] = instance->instance_id;
-  buffer[pos++] = dag->version;
+  if(get_hack() == 4){
+      buffer[pos++] = get_version();
+  }else{
+    buffer[pos++] = dag->version;
+  }
+  
   is_root = (dag->rank == ROOT_RANK(instance));
 
 #if RPL_LEAF_ONLY
@@ -1063,6 +1077,8 @@ dao_input(void)
   LOG_INFO_6ADDR(&UIP_IP_BUF->srcipaddr);
   LOG_INFO_("\n");
 
+  
+
   instance_id = UIP_ICMP_PAYLOAD[0];
   instance = rpl_get_instance(instance_id);
   if(instance == NULL) {
@@ -1076,6 +1092,9 @@ dao_input(void)
   } else if(RPL_IS_NON_STORING(instance)) {
     dao_input_nonstoring();
   }
+// dao input
+  dao_i++;
+  dao_in(dao_i);
 
 discard:
   uipbuf_clear();
@@ -1173,6 +1192,10 @@ dao_output(rpl_parent_t *parent, uint8_t lifetime)
 
   /* Sending a DAO with own prefix as target */
   dao_output_target(parent, &prefix, lifetime);
+  
+   // dao output
+  dao_o++;
+  dao_out(dao_o);
 }
 /*---------------------------------------------------------------------------*/
 void
@@ -1337,6 +1360,7 @@ dao_ack_input(void)
     uipbuf_clear();
     return;
   }
+
 
   LOG_INFO("Received a DAO %s with sequence number %d (%d) and status %d from ",
          status < 128 ? "ACK" : "NACK",

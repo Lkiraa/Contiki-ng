@@ -26,7 +26,7 @@
 
 /* Save RAM through a smaller uIP buffer */
 #ifndef UIP_CONF_BUFFER_SIZE
-#define UIP_CONF_BUFFER_SIZE		140
+#define UIP_CONF_BUFFER_SIZE		240
 #endif
 
 #define PROCESS_CONF_NUMEVENTS       8
